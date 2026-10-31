@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Fantasy Realms: Greek Legends – Score Calculator</title>
+  <meta name="description" content="Fantasy Realms: Greek Legends Score Calculator">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231b2150'/><text x='50%25' y='65%25' font-size='38' text-anchor='middle' fill='%23f2c230' font-family='serif'>Ω</text></svg>">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/greek.css">
+  
+  <script src="js/jquery-3.6.0.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/handlebars.min-v4.7.7.js"></script>
+  
+  <!-- Greek Legends Engine -->
+  <script src="i18n/greek/en.js"></script>
+  <script src="js/greek/cards.js"></script>
+  <script src="js/greek/scoring.js"></script>
+  <script src="js/greek/app_greek.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar Cards Template -->
+  <script id="cards-template" type="text/x-handlebars-template">
+    {{#each suits}}
+    <div class="card">
+      <div class="card-header" role="tab" id="{{@key}}-header" data-toggle="collapse" data-target="#{{@key}}" data-parent="#cards" href="#{{@key}}" aria-expanded="false" aria-controls="{{@key}}">
+        <a style="text-transform: capitalize;">{{@key}} <span class="badge badge-light float-right">{{this.length}}</span></a>
+      </div>
+      <div id="{{@key}}" class="collapse {{#if ../queryActive}}show{{/if}}" role="tabpanel" data-parent="#cards" aria-labelledby="{{@key}}-header">
+        <ul class="list-group">
+          {{#each this}}
+          <li class="list-group-item {{suit}}" data-id="{{id}}" onclick="handleDeckCardClick('{{id}}')">
+            <span class="badge badge-secondary" style="min-width: 1.8rem;">{{strength}}</span>
+            <span class="card-title-text">{{lookup ../../I18N.en.cards id 'name'}}</span>
+            {{#if tags.length}}
+              <span class="tags-container float-right d-none d-sm-inline">
+                {{#each tags}}
+                  <span class="tag-badge tag-{{this}}">{{this}}</span>
+                {{/each}}
+              </span>
+            {{/if}}
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+    {{/each}}
+  </script>
+
+  <!-- Right Panel Main Template -->
+  <script id="main-view-template" type="text/x-handlebars-template">
+    <!-- Score Summary Box -->
+    <div class="score-summary-box">
+      <table class="table table-sm table-borderless mb-0">
+        <tbody>
+          <tr>
+            <td><strong>Base Strength:</strong> {{totalBase}}</td>
+            <td><strong>Bonuses:</strong> <span class="text-success">+{{totalBonus}}</span></td>
+            <td><strong>Penalties:</strong> <span class="text-danger">{{totalPenalty}}</span></td>
+            <td><strong>Afterlife Penalty ({{afterlifeCount}} × −10):</strong> <span class="text-danger">{{afterlifePenalty}}</span></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="3" class="pt-2"><strong>GRAND TOTAL:</strong></td>
+            <td class="pt-2 text-right text-primary" style="font-size: 1.3rem;"><strong>{{grandTotal}} pts</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Hand Cards Section -->
+    <div class="section-title hand-section-title">
+      <span>✋ HAND ({{handCount}} / 7)</span>
+      <small class="text-muted font-weight-normal">Living cards</small>
+    </div>
+
+    {{#if handCards.length}}
+      {{#each handCards}}
+      <div id="card-{{id}}" class="card mb-2 {{#if isMasked}}blanked{{/if}}">
+        <ul class="list-group">
+          <li class="list-group-item {{suit}} d-flex justify-content-between align-items-center">
+            <div>
+              <span class="badge badge-secondary mr-2" style="font-size: 0.95rem;">
+                {{#if isMasked}}BLANK{{else}}{{strength}}{{/if}}
+              </span>
+              <strong style="font-size: 1.05rem;">{{name}}</strong>
+              <small class="ml-2 badge badge-light text-uppercase">{{suitName}}</small>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="badge badge-primary mr-2" style="font-size: 1rem; min-width: 2.5rem; text-align: center;">
+                {{total}}
+              </span>
+              <button type="button" class="btn btn-sm btn-outline-light btn-card-action" onclick="event.stopPropagation(); moveHandToAfterlife('{{id}}');" title="Send to Afterlife">
+                ☠ Afterlife
+              </button>
+              <button type="button" class="btn btn-sm btn-danger btn-card-action" onclick="event.stopPropagation(); removeFromHand('{{id}}');" title="Remove">
+                ✕
+              </button>
+            </div>
+          </li>
+          
+          <!-- Tags Line -->
+          {{#if tags.length}}
+          <li class="list-group-item py-1 bg-light">
+            <small class="text-muted font-weight-bold mr-1">Tags:</small>
+            {{#each tags}}
+              <span class="tag-badge tag-{{tag}}">{{label}}</span>
+            {{/each}}
+            {{#if addedTags.length}}
+              <span class="text-success font-weight-bold ml-2">(+</span>
+              {{#each addedTags}}
+                <span class="tag-badge tag-{{tag}}">+{{label}}</span>
+              {{/each}}
+              <span class="text-success font-weight-bold">)</span>
+            {{/if}}
+          </li>
+          {{/if}}
+
+          <!-- Card Description & Score Details -->
+          <li class="list-group-item">
+            <div style="font-size: 0.88rem; color: #495057;">
+              {{text}}
+            </div>
+            
+            <div class="mt-1 d-flex justify-content-between" style="font-size: 0.82rem;">
+              <span>
+                Base: <b>{{base}}</b>
+                {{#if bonus}} &middot; Bonus: <b class="text-success">+{{bonus}}</b>{{/if}}
+                {{#if penalty}} &middot; Penalty: <b class="text-danger">{{penalty}}</b>{{/if}}
+                {{#if isPenaltyCleared}} &middot; <s class="text-muted">Penalty Cleared</s>{{/if}}
+                {{#if isMasked}} &middot; <i class="text-danger">Card Cleared (0 pts)</i>{{/if}}
+                {{#if sentBy}} &middot; <span class="text-danger">☠ Sent by {{sentBy}}</span>{{/if}}
+              </span>
+            </div>
+
+            <!-- Choice dropdowns if needed -->
+            {{#if slots.length}}
+            <div class="card-choices">
+              {{#each slots}}
+                <label class="mr-3 mb-1">
+                  <strong>{{label}}:</strong>
+                  <select class="choice-select" onchange="handleChoiceChange('{{../id}}', '{{key}}', this.value)">
+                    {{#each options}}
+                      <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                    {{/each}}
+                  </select>
+                </label>
+              {{/each}}
+            </div>
+            {{/if}}
+          </li>
+        </ul>
+      </div>
+      {{/each}}
+    {{else}}
+      <div class="alert alert-light text-center py-4 border">
+        Your Hand is empty. Click cards on the left panel to add up to 7 cards.
+      </div>
+    {{/if}}
+
+    <!-- Afterlife Cards Section -->
+    <div class="section-title afterlife-section-title mt-4">
+      <span>☠ AFTERLIFE ({{afterlifeCount}})</span>
+      <small style="color: #ff9999;">−10 pts each = {{afterlifePenalty}} pts</small>
+    </div>
+
+    {{#if afterlifeCards.length}}
+      {{#each afterlifeCards}}
+      <div id="card-{{id}}" class="card mb-2 afterlife-card {{#if isMasked}}blanked{{/if}}">
+        <ul class="list-group">
+          <li class="list-group-item {{suit}} d-flex justify-content-between align-items-center">
+            <div>
+              <span class="badge badge-secondary mr-2" style="font-size: 0.95rem;">
+                {{#if isMasked}}BLANK{{else}}{{strength}}{{/if}}
+              </span>
+              <strong style="font-size: 1.05rem;">{{name}}</strong>
+              <span class="badge afterlife-badge">Afterlife</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="badge badge-primary mr-2" style="font-size: 1rem; min-width: 2.5rem; text-align: center;">
+                {{total}}
+              </span>
+              <button type="button" class="btn btn-sm btn-outline-light btn-card-action" onclick="event.stopPropagation(); moveAfterlifeToHand('{{id}}');" title="Move back to Hand">
+                ✋ Hand
+              </button>
+              <button type="button" class="btn btn-sm btn-danger btn-card-action" onclick="event.stopPropagation(); removeFromAfterlife('{{id}}');" title="Remove">
+                ✕
+              </button>
+            </div>
+          </li>
+          
+          {{#if tags.length}}
+          <li class="list-group-item py-1 bg-light">
+            <small class="text-muted font-weight-bold mr-1">Tags:</small>
+            {{#each tags}}
+              <span class="tag-badge tag-{{tag}}">{{label}}</span>
+            {{/each}}
+          </li>
+          {{/if}}
+
+          <li class="list-group-item">
+            <div style="font-size: 0.88rem; color: #495057;">
+              {{text}}
+            </div>
+            <div class="mt-1" style="font-size: 0.82rem;">
+              Base: <b>{{base}}</b>
+              {{#if bonus}} &middot; Bonus: <b class="text-success">+{{bonus}}</b>{{/if}}
+              {{#if penalty}} &middot; Penalty: <b class="text-danger">{{penalty}}</b>{{/if}}
+              {{#if isPenaltyCleared}} &middot; <s class="text-muted">Penalty Cleared</s>{{/if}}
+              {{#if isMasked}} &middot; <i class="text-danger">Card Cleared</i>{{/if}}
+            </div>
+
+            {{#if slots.length}}
+            <div class="card-choices">
+              {{#each slots}}
+                <label class="mr-3 mb-1">
+                  <strong>{{label}}:</strong>
+                  <select class="choice-select" onchange="handleChoiceChange('{{../id}}', '{{key}}', this.value)">
+                    {{#each options}}
+                      <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                    {{/each}}
+                  </select>
+                </label>
+              {{/each}}
+            </div>
+            {{/if}}
+          </li>
+        </ul>
+      </div>
+      {{/each}}
+    {{else}}
+      <div class="alert alert-light text-center py-3 border text-muted">
+        No cards in the Afterlife.
+      </div>
+    {{/if}}
+  </script>
+
+  <div id="container">
+    <header style="background: linear-gradient(90deg, #1b2150 0%, #24307a 100%); border-bottom: 2px solid #f2c230;">
+      <div class="d-flex align-items-center">
+        <h4 class="mb-0 text-white font-weight-bold mr-3" style="font-family: serif; letter-spacing: 1px;">
+          Fantasy Realms: <span style="color: #f2c230;">Greek Legends</span>
+        </h4>
+        <a href="index.html" class="btn btn-sm btn-outline-light d-none d-md-inline-block">Switch to Classic</a>
+      </div>
+      
+      <div id="header-right">
+        <div id="hand-info" style="color: #fff;">
+          <span id="cardCount">0</span><span class="separator">/</span><span id="cardLimit">7</span>
+          <span id="points" style="color: #f2c230; margin-left: 0.6rem;">000</span>
+        </div>
+        <button id="clear" type="button" class="btn btn-danger ml-2" onclick="clearAll()" title="Reset all cards">↻</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Left Column: Search & Deck Accordion -->
+      <div id="left">
+        <div id="card-search-container">
+          <!-- Mode switcher: Where clicking adds the card -->
+          <div class="mode-toggle-group">
+            <button type="button" class="mode-btn active" data-mode="hand" onclick="setSelectionMode('hand')">
+              + Add to Hand
+            </button>
+            <button type="button" class="mode-btn mode-afterlife" data-mode="afterlife" onclick="setSelectionMode('afterlife')">
+              + Add to Afterlife
+            </button>
+          </div>
+          <input type="text" id="card-search-input" placeholder="🔍 Search card, suit or tag..." autocomplete="off">
+        </div>
+        <div id="cards" class="panel" role="tablist" aria-multiselectable="true"></div>
+      </div>
+
+      <!-- Right Column: Hand & Afterlife -->
+      <div id="right">
+        <div id="hand"></div>
+      </div>
+    </main>
+
+    <footer>
+      <div id="wizkids-logo">
+        <img src="img/wizkids.png" style="width: 7rem;" alt="Wizkids">
+      </div>
+      <div id="legal-text">
+        Fantasy Realms: Greek Legends score calculator &middot; Game design by Bruce Glassco &middot; © WizKids/NECA LLC.
+      </div>
+    </footer>
+  </div>
+</body>
+
+</html>

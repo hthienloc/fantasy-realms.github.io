@@ -1,0 +1,197 @@
+/* Greek Legends theme & additions matching fantasy-realms classic layout */
+:root {
+  --gods-color: #1f8797;
+  --heroes-color: #a8338a;
+  --items-color: #3b3a3a;
+  --locations-color: #2e8b23;
+  --monsters-color: #ba261d;
+  --quests-color: #8c9710;
+  --afterlife-header-bg: #2a1d3f;
+  --afterlife-card-bg: #221833;
+}
+
+/* Suit colors */
+li.gods, .badge-gods { background-color: var(--gods-color) !important; color: white !important; }
+span.gods { color: var(--gods-color) !important; }
+#gods-header { border-right: solid var(--gods-color) var(--header-border); }
+
+li.heroes, .badge-heroes { background-color: var(--heroes-color) !important; color: white !important; }
+span.heroes { color: var(--heroes-color) !important; }
+#heroes-header { border-right: solid var(--heroes-color) var(--header-border); }
+
+li.items, .badge-items { background-color: var(--items-color) !important; color: white !important; }
+span.items { color: var(--items-color) !important; }
+#items-header { border-right: solid var(--items-color) var(--header-border); }
+
+li.locations, .badge-locations { background-color: var(--locations-color) !important; color: white !important; }
+span.locations { color: var(--locations-color) !important; }
+#locations-header { border-right: solid var(--locations-color) var(--header-border); }
+
+li.monsters, .badge-monsters { background-color: var(--monsters-color) !important; color: white !important; }
+span.monsters { color: var(--monsters-color) !important; }
+#monsters-header { border-right: solid var(--monsters-color) var(--header-border); }
+
+li.quests, .badge-quests { background-color: var(--quests-color) !important; color: white !important; }
+span.quests { color: var(--quests-color) !important; }
+#quests-header { border-right: solid var(--quests-color) var(--header-border); }
+
+/* Search filter box */
+#card-search-container {
+  padding: 0.5rem;
+  background-color: #fff;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#card-search-input {
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Mode toggles (Hand / Afterlife mode) */
+.mode-toggle-group {
+  display: flex;
+  margin-bottom: 0.4rem;
+  gap: 4px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: 1px solid #ced4da;
+  background: #f8f9fa;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  background: #24307a;
+  color: white;
+  border-color: #1b2150;
+}
+
+.mode-btn.mode-afterlife.active {
+  background: #5b287d;
+  color: white;
+  border-color: #3f1958;
+}
+
+/* Sections for Hand & Afterlife */
+.section-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.4rem 0.6rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hand-section-title {
+  background-color: #e9ecef;
+  color: #333;
+  border-left: 5px solid #24307a;
+}
+
+.afterlife-section-title {
+  background-color: var(--afterlife-header-bg);
+  color: #f1e6ff;
+  border-left: 5px solid #b3261e;
+}
+
+/* Afterlife cards in right panel */
+.afterlife-card {
+  border: 1px solid #5a3e79 !important;
+}
+
+.afterlife-badge {
+  background-color: #832729 !important;
+  color: white !important;
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+/* Tags in cards */
+.tag-badge {
+  display: inline-block;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background-color: #e2e8f0;
+  color: #334155;
+  border-radius: 3px;
+  margin-right: 3px;
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+.tag-badge.tag-divine { background-color: #e0f2fe; color: #0369a1; }
+.tag-badge.tag-aquatic { background-color: #e0f7fa; color: #00695c; }
+.tag-badge.tag-warrior { background-color: #fce7f3; color: #9d174d; }
+.tag-badge.tag-clever { background-color: #fef3c7; color: #92400e; }
+.tag-badge.tag-wise { background-color: #ede9fe; color: #5b21b6; }
+.tag-badge.tag-magic { background-color: #f3e8ff; color: #6b21a8; }
+.tag-badge.tag-monarch { background-color: #fef9c3; color: #854d0e; }
+.tag-badge.tag-strong { background-color: #fee2e2; color: #991b1b; }
+.tag-badge.tag-nimble { background-color: #ecfdf5; color: #065f46; }
+.tag-badge.tag-plant { background-color: #f0fdf4; color: #166534; }
+.tag-badge.tag-artistic { background-color: #fff1f2; color: #9f1239; }
+.tag-badge.tag-friendly { background-color: #f0fdfa; color: #115e59; }
+.tag-badge.tag-hostile { background-color: #fef2f2; color: #b91c1c; }
+
+/* Choice selectors */
+.card-choices {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed #ced4da;
+  font-size: 0.85rem;
+}
+
+.choice-select {
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid #ced4da;
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+/* Card buttons */
+.btn-card-action {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  margin-left: 0.3rem;
+  border-radius: 3px;
+}
+
+/* Summary breakdown table */
+.score-summary-box {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.score-summary-box table {
+  width: 100%;
+}
+
+.score-summary-box td {
+  padding: 2px 4px;
+}
+
+.score-summary-box .total-row {
+  font-weight: bold;
+  font-size: 1.05rem;
+  border-top: 1px solid #ccc;
+}
